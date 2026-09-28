@@ -1,7 +1,7 @@
 import torch 
 import torch.nn as nn 
 
-from layers import DSConv
+from models.layers import DSConv
 
 class Backbone(nn.Module):
     def __init__(self, c_in=1, slope=1/5.5):
@@ -32,23 +32,28 @@ class Backbone(nn.Module):
         self.layer14 = DSConv(128, 128, stride=1, slope=slope)
         self.layer15 = DSConv(128, 128, stride=1, slope=slope)
 
-
         
-    def forward (self, x): 
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
-        x = self.layer5(x)
-        x = self.layer6(x)
-        x = self.layer7(x)
-        x = self.layer8(x)
-        x = self.layer9(x)
-        x = self.layer10(x)
-        x = self.layer11(x)
-        x = self.layer12(x)
-        x = self.layer13(x)
-        x = self.layer14(x)
-        x = self.layer15(x)
+    def forward(self, x):
+        f1 = self.layer1(x)      # (B, 8, 80, 80)    L/2
+        f2 = self.layer2(f1)     # (B, 16, 40, 40)   L/4
+        f3 = self.layer3(f2)     # (B, 16, 40, 40)
+        f4 = self.layer4(f3)     # (B, 32, 20, 20)   L/8
+        f5 = self.layer5(f4)
+        f6 = self.layer6(f5)
+        f7 = self.layer7(f6)     # (B, 64, 10, 10)   L/16
+        f8 = self.layer8(f7)
+        f9 = self.layer9(f8)
+        f10 = self.layer10(f9)
+        f11 = self.layer11(f10)  # (B, 128, 5, 5)    L/32
+        f12 = self.layer12(f11)
+        f13 = self.layer13(f12)
+        f14 = self.layer14(f13)
+        f15 = self.layer15(f14)
 
-        return x
+        return {
+            "f1": f1,                       # para FF-Module
+            "f3": f3,                       # para FF-Module
+            "s8": [f4, f5, f6],             # L/8:  para FE-Module
+            "s16": [f7, f8, f9, f10],       # L/16: para FE-Module
+            "s32": [f11, f12, f13, f14, f15],  # L/32: para FE-Module
+        }

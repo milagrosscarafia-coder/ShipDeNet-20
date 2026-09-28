@@ -4,8 +4,8 @@ import torch
 import torch.nn as nn 
 import torch.nn.functional as F 
 
-from layers import DSConv
-from backbone import Backbone
+from models.layers import DSConv
+from models.backbone import Backbone
 
 
 class FF(nn.Module): 
@@ -41,7 +41,7 @@ class FE(nn.Module):
         return x32, x16, x8
 
 class SSFP (nn.Module):
-    def __init__(self,c32, c16, c8, out_ch=15, slope = 1/5.5):
+    def __init__(self,c32, c16, c8, out_ch=15, slope = 1/5.5, share=True):
 
         # los canales de salida no son los del backbone sino los que se tiene luego de aplicarle los distintos modulos a la red,
         #  por lo que conviene que sean un parametro de la red, debido a que va a depender de si se ponen o no todos los modulos 
@@ -53,13 +53,18 @@ class SSFP (nn.Module):
         self.layer18 = DSConv(c32, out_ch, slope = slope, head = True)
         self.layer19 = DSConv(c16, out_ch, slope = slope, head = True )
         self.layer20 = DSConv(c8, out_ch, slope = slope, head = True )
+
+        self.share = share
     
     def forward(self, x32, x16, x8):
 
         d32 = self.layer18(x32)
         d16 = self.layer19(x16)
         d8 = self.layer20(x8)
-       
+
+        if not self.share:
+            return [d32, d16, d8]
+
         d32_prima = d32 + F.avg_pool2d(d16, 2) + F.avg_pool2d(d8, 4)          # todo a 5x5
         d16_prima = d16 + F.interpolate(d32, scale_factor=2) + F.avg_pool2d(d8, 2)   # todo a 10x10
         d8_prima = d8 + F.interpolate(d16, scale_factor=2) + F.interpolate(d32, scale_factor=4)  # todo a 20x20

@@ -8,10 +8,10 @@ aplicación a visión artificial* (Instituto Balseiro).
 
 - [x] Lectura del dataset (`rdata.py`) y tests
 - [x] Cálculo de anchors con k-means (`anchors.py`) y tests
-- [ ] Backbone con DS-Conv (15 capas)
-- [ ] Loss (Ec. 22–25 de [2])
-- [ ] Post-proceso (decodificación + NMS) y evaluación (AP50)
-- [ ] Módulos FF, FE y SSFP
+- [x] Backbone con DS-Conv (15 capas)
+- [x] Loss (Ec. 22–25 de [2]) (implementada por claude)
+- [x] Post-proceso (decodificación + NMS) y evaluación (AP50)
+- [x] Módulos FF, FE y SSFP
 - [ ] Entrenamiento y ablación (Tabla I de [1])
 
 
