@@ -1,4 +1,4 @@
-from rdata import SSDD_BBox_coco
+from read_data_set.rdata import SSDD_BBox_coco
 import torch
 
 

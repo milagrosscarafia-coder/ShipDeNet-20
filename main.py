@@ -10,11 +10,13 @@ from models.layers import DSConv
 
 from tqdm import tqdm
 
-BASE = r"C:\Users\Usuario\Desktop\5to Semestre\Aprendizaje profundo con vision artificial\ShipDeNet\ShipDeNet-20\Official-SSDD-OPEN\Official-SSDD-OPEN\BBox_SSDD\coco_style"
-img_dir = BASE + r"\images\train"
-ann_file = BASE + r"\annotations\train.json"
+import os
+BASE = os.path.join("Official-SSDD-OPEN", "Official-SSDD-OPEN", "BBox_SSDD", "coco_style")
+img_dir = os.path.join(BASE, "images", "train")
+ann_file = os.path.join(BASE, "annotations", "train.json")
 
-EPOCHS, BATCH, LR, VALS = 2000, 32, 1e-3, 5
+
+EPOCHS, BATCH, LR, VALS = 10, 32, 1e-3, 5
 
 
 def collate(batch):
