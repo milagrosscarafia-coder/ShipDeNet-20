@@ -54,7 +54,7 @@ print(f"IoU medio de los anchors: {mean_iou:.4f}")
 torch.save(anchors, "anchors.pt")
 
 # ---- modelo, optimizador, scheduler
-model = ShipDeNet(c_in=1, use_ff=True, use_fe=True, use_ssfp=True,
+model = ShipDeNet(c_in=1, use_ff=True, use_fe=True, use_ssfp=False,
                     out_ch=3 * VALS).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 total_iters = EPOCHS * len(train_loader)
