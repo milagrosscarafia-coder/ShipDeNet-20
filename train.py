@@ -1,7 +1,3 @@
-from main import OVERFIT
-from utils.metrics import evaluate
-from utils.decode import decode, xywh_to_xyxy
-from utils.nms import postprocess
 import torch
 import torch.nn as nn
 from loss import ShipDeNetLoss
