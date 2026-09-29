@@ -28,7 +28,7 @@ torch.manual_seed(0)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
-OVERFIT = True     # True: prueba con 8 imágenes. False: entrenamiento real.
+OVERFIT = False     # True: prueba con 8 imágenes. False: entrenamiento real.
 
 if OVERFIT:
     EPOCHS, BATCH = 300, 8
@@ -54,7 +54,7 @@ print(f"IoU medio de los anchors: {mean_iou:.4f}")
 torch.save(anchors, "anchors.pt")
 
 # ---- modelo, optimizador, scheduler
-model = ShipDeNet(c_in=1, use_ff=True, use_fe=True, use_ssfp=False,
+model = ShipDeNet(c_in=1, use_ff=True, use_fe=True, use_ssfp=True,
                     out_ch=3 * VALS).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 total_iters = EPOCHS * len(train_loader)

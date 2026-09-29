@@ -13,7 +13,7 @@ import torch
 from loss import ANCHOR_GROUPS, IMG
 
 
-def decode(preds, anchors, vals=6):
+def decode(preds, anchors, vals=5):
     """preds: [p32, p16, p8], cada uno (B, 3*vals, S, S).
     anchors: (9, 2) en pixeles de 160x160, ordenados de chico a grande.
 
