@@ -135,7 +135,7 @@ def measure_fps(model, img_size=160, c_in=1, n_iter=200, warmup=20, device="cuda
 
 
 def count_params(model):
-    """Parametros entrenables (comparar con la columna Parameter de la Tabla I)."""
+    """Parametros entrenables."""
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 

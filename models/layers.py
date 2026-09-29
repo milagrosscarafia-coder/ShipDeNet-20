@@ -1,7 +1,19 @@
 import torch
 import torch.nn as nn
 
+class ConvAC(nn.Module):
+    def __init__(self,c_in,c_out,stride=1,slope=1/5.5,kernel_size=3,head=False):
+        super().__init__()
+        self.conv = nn.Conv2d(c_in,c_out,kernel_size=kernel_size,stride=stride,padding=1,bias=head)
+        self.bn = nn.BatchNorm2d(c_out)
+        self.act = nn.LeakyReLU(negative_slope=slope,inplace=True)
 
+        def forward(self,x):
+            x = self.conv(x)
+            if not self.head:
+                x = self.bn(x)
+                x = self.act(x)
+            return x
 class DSConv(nn.Module):
     def __init__(self, c_in, c_out, stride=1, slope=1/5.5, kernel_size=3, head = False ):
         super().__init__()
