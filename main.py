@@ -16,7 +16,7 @@ img_dir = os.path.join(BASE, "images", "train")
 ann_file = os.path.join(BASE, "annotations", "train.json")
 
 
-EPOCHS, BATCH, LR, VALS = 500, 32, 1e-3, 5
+EPOCHS, BATCH, LR, VALS = 2000, 32, 1e-3, 5
 
 
 def collate(batch):
@@ -47,6 +47,8 @@ else:
 train_loader = DataLoader(train_set, batch_size=BATCH, shuffle=True, collate_fn=collate)
 val_loader = DataLoader(val_set, batch_size=BATCH, shuffle=False, collate_fn=collate)
 
+images, _ = next(iter(train_loader))
+print(images.shape, images.dtype, images.min().item(), images.max().item(), images.mean().item())
 # ---- anchors (una vez; después se pueden cargar de anchors.pt)
 wh = load_train_wh(img_dir, ann_file)
 anchors, mean_iou = best_of_runs(wh, k=9)
