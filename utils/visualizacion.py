@@ -83,5 +83,6 @@ def plotear(tr_losses, val_losses, tr_parts, val_parts,path):
         ax[1].set_ylabel("metrics")
         ax[1].legend()
     if path:
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
         fig.savefig(path, dpi=150)
     return fig
