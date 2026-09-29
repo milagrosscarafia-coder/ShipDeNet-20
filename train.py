@@ -1,11 +1,15 @@
+from main import OVERFIT
 from utils.metrics import evaluate
 from utils.decode import decode, xywh_to_xyxy
 from utils.nms import postprocess
 import torch
 import torch.nn as nn
 from loss import ShipDeNetLoss
+from utils.visualizacion import plotear
 
 from tqdm import tqdm
+
+from utils.visualizacion import plotear
 
 
 IMG = 160 # dimension de la imagen 
@@ -79,7 +83,7 @@ class ShipDeNetTrain (nn.Module):
         
         return total / len(loader), result
 
-    def fit(self, train_loader, val_loader, epochs=2000, eval_every=50, out="best.pt"):
+    def fit(self, train_loader, val_loader, epochs=2000, eval_every=50, plot_every=50, out="best.pt"):
 
         self.init_glorot()
         best = float("inf")
@@ -105,6 +109,10 @@ class ShipDeNetTrain (nn.Module):
             self.tr_losses.append(tr_loss)
             self.val_losses.append(val_loss)
             self.tr_parts.append(parts)
+
+            if epoch % plot_every == 0:
+                plotear(self.tr_losses, self.val_losses, self.tr_parts, self.val_parts,
+                            save_path=f"losses.png{epoch}")
         
     
 
