@@ -8,12 +8,12 @@ class ConvAC(nn.Module):
         self.bn = nn.BatchNorm2d(c_out)
         self.act = nn.LeakyReLU(negative_slope=slope,inplace=True)
 
-        def forward(self,x):
-            x = self.conv(x)
-            if not self.head:
-                x = self.bn(x)
-                x = self.act(x)
-            return x
+    def forward(self,x):
+        x = self.conv(x)
+        if not self.head:
+            x = self.bn(x)
+            x = self.act(x)
+        return x
 class DSConv(nn.Module):
     def __init__(self, c_in, c_out, stride=1, slope=1/5.5, kernel_size=3, head = False ):
         super().__init__()
