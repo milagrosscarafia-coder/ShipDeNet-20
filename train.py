@@ -81,8 +81,11 @@ class ShipDeNetTrain (nn.Module):
 
     def fit(self, train_loader, val_loader, epochs=2000, eval_every=50, out="best.pt"):
 
-        self.init_glorot
+        self.init_glorot()
         best = float("inf")
+
+        self.tr_losses, self.val_losses = [], []
+        self.tr_parts, self.val_parts = [], []
 
         for epoch in tqdm(range(1, epochs+1)):
             tr_loss, parts = self.train_one_epoch(train_loader)
@@ -94,9 +97,15 @@ class ShipDeNetTrain (nn.Module):
             print(f"época {epoch} | train {tr_loss:.3f} {parts} | val {val_loss:.3f}")
             if res is not None:
                 print(f"   AP50 {res['AP50']:.4f}  P {res['precision']:.4f}  R {res['recall']:.4f}")
+                self.val_parts.append(res)
             if val_loss < best:
                 best = val_loss
                 torch.save(self.model.state_dict(), out)
+
+            self.tr_losses.append(tr_loss)
+            self.val_losses.append(val_loss)
+            self.tr_parts.append(parts)
+        
     
 
         

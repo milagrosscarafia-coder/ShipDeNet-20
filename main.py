@@ -7,7 +7,7 @@ from read_data_set.anchors import best_of_runs, load_train_wh
 from read_data_set.rdata import SSDD_BBox_coco
 
 from models.layers import DSConv
-from utils.visualizacion import visualizar
+from utils.visualizacion import visualizar, plotear
 from tqdm import tqdm
 
 import os
@@ -74,3 +74,6 @@ model.load_state_dict(torch.load("best.pt", map_location=device))
 
 visualizar(model, val_loader, anchors, vals=VALS, device=device,
            nombre="ShipDeNet-20 (validación)")
+
+plotear(trainer.tr_losses, trainer.val_losses, trainer.tr_parts, trainer.val_parts,
+        save_path="losses.png" if not OVERFIT else "losses_overfit.png")

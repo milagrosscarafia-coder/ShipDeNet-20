@@ -63,3 +63,24 @@ def visualizar(model, loader, anchors, vals, device, nombre="ShipDeNet-20",
     if show:
         plt.show()
     return r
+def plotear(tr_losses, val_losses, tr_parts, val_parts,path): 
+    """Grafica las curvas de loss y AP50, precision y recall en la misma figura."""
+    fig, ax = plt.subplots(1, 2, figsize=(10, 4))
+    ax[0].plot(tr_losses, label="train")
+    ax[0].plot(val_losses, label="val")
+    ax[0].set_xlabel("epoch")
+    ax[0].set_ylabel("loss")
+    ax[0].legend()
+    if tr_parts:
+        ap50 = [p["AP50"] for p in val_parts]
+        prec = [p["precision"] for p in val_parts]
+        rec = [p["recall"] for p in val_parts]
+        ax[1].plot(ap50, label="AP50")
+        ax[1].plot(prec, label="precision")
+        ax[1].plot(rec, label="recall")
+        ax[1].set_xlabel(f"epoch (cada {len(tr_losses) // len(ap50)} epochs)")
+        ax[1].set_ylabel("metrics")
+        ax[1].legend()
+    if path:
+        fig.savefig(path, dpi=150)
+    return fig

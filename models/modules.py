@@ -70,6 +70,29 @@ class SSFP (nn.Module):
         d8_prima = d8 + F.interpolate(d16, scale_factor=2) + F.interpolate(d32, scale_factor=4)  # todo a 20x20
 
         return [d32_prima, d16_prima, d8_prima]
+
+# class SSFP(nn.Module):
+#     def __init__(self, c32, c16, c8, out_ch=15, mid_ch=32, slope=1/5.5, share=True):
+#         super().__init__()
+#         self.share = share
+#         self.layer18 = DSConv(c32, mid_ch, slope=slope)   # características, con BN y activación
+#         self.layer19 = DSConv(c16, mid_ch, slope=slope)
+#         self.layer20 = DSConv(c8, mid_ch, slope=slope)
+#         self.pred32 = nn.Conv2d(mid_ch, out_ch, kernel_size=1)   # predicción lineal, con bias
+#         self.pred16 = nn.Conv2d(mid_ch, out_ch, kernel_size=1)
+#         self.pred8 = nn.Conv2d(mid_ch, out_ch, kernel_size=1)
+
+#     def forward(self, x32, x16, x8):
+#         d32 = self.layer18(x32)
+#         d16 = self.layer19(x16)
+#         d8 = self.layer20(x8)
+#         if self.share:
+#             d32, d16, d8 = (
+#                 d32 + F.avg_pool2d(d16, 2) + F.avg_pool2d(d8, 4),
+#                 d16 + F.interpolate(d32, scale_factor=2) + F.avg_pool2d(d8, 2),
+#                 d8 + F.interpolate(d16, scale_factor=2) + F.interpolate(d32, scale_factor=4),
+#             )
+#         return [self.pred32(d32), self.pred16(d16), self.pred8(d8)]
         
 
 

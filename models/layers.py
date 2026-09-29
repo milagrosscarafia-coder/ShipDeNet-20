@@ -12,7 +12,7 @@ class DSConv(nn.Module):
         
         self.bn1 = nn.BatchNorm2d(c_in) #normalizacion sugerida por ia
         # Pointwise: 1x1 conv that mixes all channels -> c_outg
-        self.point_conv = nn.Conv2d(c_in, c_out, kernel_size=1, bias=False)
+        self.point_conv = nn.Conv2d(c_in, c_out, kernel_size=1, bias=head)
         #El paper usa Leaky-ReLU con α = 5.5, definida como y = x/α para x < 0, lo que 
         #en pytorch es negative_slope = 1/5.5 ≈ 0.18
         self.act = nn.LeakyReLU(negative_slope=slope, inplace=True)
