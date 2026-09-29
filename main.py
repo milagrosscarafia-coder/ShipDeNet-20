@@ -65,7 +65,7 @@ scheduler = torch.optim.lr_scheduler.LambdaLR(
 
 # ---- entrenamiento
 trainer = ShipDeNetTrain(model, anchors, optimizer, scheduler, device, vals=VALS)
-trainer.fit(train_loader, val_loader, epochs=EPOCHS,  eval_every=25 if OVERFIT else 50, plot_every=25 if OVERFIT else 50, out="best.pt")
+trainer.fit(train_loader, val_loader, epochs=EPOCHS,  eval_every=25 if OVERFIT else 50, plot_every=50, out="best.pt")
 
 
 # cargar el MEJOR modelo guardado, no los pesos de la última época
