@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 from loss import ShipDeNetLoss
 from utils.visualizacion import plotear
+from matplotlib import pyplot as plt
 
 from tqdm import tqdm
 
@@ -111,7 +112,13 @@ class ShipDeNetTrain (nn.Module):
 
             if epoch % plot_every == 0:
                 plotear(self.tr_losses, self.val_losses, self.tr_parts, self.val_parts,
-                            save_path=f"losses.png{epoch}")
+                            save_path=f"losses{epoch}.png")
+                try:
+                    from IPython.display import Image, display
+                    display(Image(path))          # aparece en la salida de la celda
+                except Exception:
+                    pass                          # si no corre en un notebook, solo la guarda
+                plt.close("all")
         
     
 
