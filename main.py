@@ -7,7 +7,7 @@ from read_data_set.anchors import best_of_runs, load_train_wh
 from read_data_set.rdata import SSDD_BBox_coco
 
 from models.layers import DSConv
-
+from utils.visualizacion import visualizar
 from tqdm import tqdm
 
 import os
@@ -16,7 +16,7 @@ img_dir = os.path.join(BASE, "images", "train")
 ann_file = os.path.join(BASE, "annotations", "train.json")
 
 
-EPOCHS, BATCH, LR, VALS = 10, 32, 1e-3, 5
+EPOCHS, BATCH, LR, VALS = 500, 32, 1e-3, 5
 
 
 def collate(batch):
@@ -55,3 +55,10 @@ scheduler = torch.optim.lr_scheduler.LambdaLR(
 trainer = ShipDeNetTrain(model, anchors, optimizer, scheduler, device, vals=VALS)
 trainer.fit(train_loader, val_loader, epochs=EPOCHS, eval_every= 50,
             out="best.pt")
+
+
+# cargar el MEJOR modelo guardado, no los pesos de la última época
+model.load_state_dict(torch.load("best.pt", map_location=device))
+
+visualizar(model, val_loader, anchors, vals=VALS, device=device,
+           nombre="ShipDeNet-20 (validación)")
