@@ -113,7 +113,7 @@ class ShipDeNetTrain (nn.Module):
             if epoch % plot_every == 0:
                 path = f"losses_{epoch}.png"
                 plotear(self.tr_losses, self.val_losses, self.tr_parts, self.val_parts,
-                        save_path=path)
+                        path=path)
                 plt.close("all")
         
     
