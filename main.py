@@ -27,12 +27,22 @@ def collate(batch):
 torch.manual_seed(0)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
+
+OVERFIT = True     # True: prueba con 8 imágenes. False: entrenamiento real.
+
+if OVERFIT:
+    EPOCHS, BATCH = 300, 8
+
 # ---- datos
 dataset = SSDD_BBox_coco(img_dir, ann_file, size=160)
 
-n_val = int(0.2 * len(dataset))
-train_set, val_set = random_split(dataset, [len(dataset) - n_val, n_val],
-                                        generator=torch.Generator().manual_seed(0))
+if OVERFIT:
+    train_set = val_set = Subset(dataset, range(8))   # las mismas 8 imágenes
+else:
+    n_val = int(0.2 * len(dataset))
+    train_set, val_set = random_split(dataset, [len(dataset) - n_val, n_val],
+                                      generator=torch.Generator().manual_seed(0))
+
 
 train_loader = DataLoader(train_set, batch_size=BATCH, shuffle=True, collate_fn=collate)
 val_loader = DataLoader(val_set, batch_size=BATCH, shuffle=False, collate_fn=collate)
@@ -53,7 +63,7 @@ scheduler = torch.optim.lr_scheduler.LambdaLR(
 
 # ---- entrenamiento
 trainer = ShipDeNetTrain(model, anchors, optimizer, scheduler, device, vals=VALS)
-trainer.fit(train_loader, val_loader, epochs=EPOCHS, eval_every= 50,
+trainer.fit(train_loader, val_loader, epochs=EPOCHS,  eval_every=25 if OVERFIT else 50,
             out="best.pt")
 
 
