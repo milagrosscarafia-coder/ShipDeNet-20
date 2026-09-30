@@ -163,4 +163,30 @@ Devuelve, para cada escala (orden L/32, L/16, L/8):
 - **`xyxy_to_coco`**:(x1, y1, x2, y2) en pixeles de 160x160 -> [x, y, w, h] COCO en pixeles de la imagen original, para evaluar con pycocotools
 - **`xywh_to_xyxy`**:Formato del dataset [x, y, w, h] (esquina sup. izq.) -> (x1, y1, x2, y2).
 
+### metrics
+
+- **`iou_matrix`** IoU Entre cajas 
+- **`match_image`** Empareja las detecciones de una imagen con su ground truth. Recorre las detecciones de mayor a menor score, cada una es TP si su mejor ground truth tiene un IoU mayor al umbral (0.5) y si todavia no fue usando, sino es FP. 
+
+Las orgena por score. Retorna las detecciones orgedenadas por score, diciendo si es TP u la mascarara de detectados. 
+
+- **`average_precision`**: área bajo la curva precisión-recall (Ec. 19 de [2]), con interpolación
+  en todos los puntos (criterio de PASCAL VOC 2010 en adelante). Antes de integrar, reemplaza la
+  curva por su envolvente decreciente: a cada punto le asigna la mejor precisión que se alcanza
+  con un recall igual o mayor.
+
+- **`evaluate`**: calcula las métricas de detección sobre un conjunto de imágenes.
+  1. En cada imagen empareja las detecciones con los barcos reales: las recorre de mayor a menor
+     score, y cada una es un acierto (TP) si su IoU con algún barco todavía no emparejado es ≥ 0.5.
+     Si no, es una falsa alarma (FP); esto incluye las detecciones duplicadas de un mismo barco.
+     Los barcos que no se emparejan son falsos negativos (FN).
+  2. Con todas las detecciones del conjunto ordenadas por score, arma la curva precisión-recall
+     y calcula el **AP50** con `average_precision`.
+  3. Calcula la **precisión** y el **recall** (Ec. 17 y 18 de [2]) contando solo las detecciones
+     con score ≥ 0.5, como en las tablas del paper.
+
+  Devuelve AP50, precisión, recall, TP, FP, FN, la cantidad de barcos reales y la curva P-R.
+  La implementación se verificó contra `pycocotools`: las diferencias en AP50 son ≤ 0.01, y se
+  deben a que COCO aproxima la curva con 101 puntos.
+
 
