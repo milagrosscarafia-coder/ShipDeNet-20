@@ -126,6 +126,8 @@ Devuelve, para cada escala (orden L/32, L/16, L/8):
 | `obj` | (B, 3, S, S) | P_cell(ship): 1 donde hay un barco asignado (Ec. 13) |
 | `txy` | (B, 3, S, S, 2) | offset del centro dentro de la celda, en [0, 1] (Ec. 22) |
 | `box` | (B, 3, S, S, 4) | caja real `(cx, cy, w, h)` normalizada (Ec. 23 y el IoU) |
+
+
 [B es la imagen del batch, 3 hay 3 tipos de anchores, S,S la fila y columna de la celda (S=5,10,20 dependiendo la escala), con estas dimensiones se arma la grilla, `obj` recibe un solo numero por casillero de grilla, `txy` recibe 2 y `box` recibe 4]
 
 - **`ShipDeNetLoss(nn.Module)`**
@@ -148,4 +150,17 @@ Devuelve, para cada escala (orden L/32, L/16, L/8):
 
     loss = α·L_xy + β·L_wh + γ·L_score,  con  L_score = (1/γ)·L_obj + L_noobj 
     = α·L_xy + β·L_wh + L_obj + γ·L_noobj
+
+## utils/
+
+### decode.py
+- **`decode`**: Transforma la salida de la red de los modulos p32, p16, p8 con forma (B, 3*vals, S, S) en (B, N, 5) con [cx, cy, w, h, score], coordenadas normalizadas a [0, 1]. N = 3 * (5*5 + 10*10 + 20*20) = 1575 cajas por imagen.
+
+ 1. Realiza la misma decodificacion realizada en Loss, dividiendo a la imagen de salida en N cajas, cada una con sus 5 caracteristicas, solo interesan las que tienen score>umbral.
+
+- **`cxcywh_to_xyxy`**: Castea de  (cx, cy, w, h) normalizado -> (x1, y1, x2, y2) en pixeles de img x img.
+
+- **`xyxy_to_coco`**:(x1, y1, x2, y2) en pixeles de 160x160 -> [x, y, w, h] COCO en pixeles de la imagen original, para evaluar con pycocotools
+- **`xywh_to_xyxy`**:Formato del dataset [x, y, w, h] (esquina sup. izq.) -> (x1, y1, x2, y2).
+
 
