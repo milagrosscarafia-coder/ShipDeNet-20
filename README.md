@@ -74,3 +74,36 @@ distancia de [2] (Ec. 16):
     
 ## test_anchors.py
     Testbench generado con claude para anchors.py.
+
+## models/
+
+### layers.py
+
+- **`ConvAC`**: convolución convencional + BatchNorm + Leaky-ReLU. Se usa en la capa 1,
+  donde la imagen tiene un solo canal. Con `head=True` devuelve la salida lineal, con bias.
+- **`DSConv`**: convolución separable en profundidad (DS-Conv), el bloque básico de la red:
+  - *depthwise*: un filtro espacial por canal, cada canal por separado (y el downsampling si `stride > 1`);
+  - *pointwise*: convolución 1×1 que mezcla los canales y fija la cantidad de salida.
+
+  Cada una va seguida de BatchNorm + Leaky-ReLU (Fig. 5b de [2]). Con `head=True`, la pointwise
+  final es lineal y con bias, para usarla como capa de salida.
+
+### backbone.py
+
+- **`Backbone`**: las 15 capas de la Fig. 1(a) de [1]. Reduce la imagen de L a L/32 y devuelve las
+  salidas intermedias que usan los módulos: la capa 1 (L/2), la capa 3 (L/4), y las listas de
+  capas por resolución: 4-6 (L/8), 7-10 (L/16) y 11-15 (L/32).
+
+### modules.py
+
+Los tres módulos que se agregan después del backbone:
+
+- **`FF`** (*feature fusion*): capas 16 y 17. Llevan características superficiales a la
+  resolución de las profundas, para poder fusionarlas:
+  - capa 16: capa 1 (L/2) → L/32, con kernel 17×17 y stride 16;
+  - capa 17: capa 3 (L/4) → L/16, con kernel 5×5 y stride 4.
+- **`FE`** (*feature enhance*): concatena por canales todas las capas de la misma resolución:
+  11-15 + 16 en L/32, 7-10 + 17 en L/16, y 4-6 en L/8. No tiene parámetros.
+- **`SSFP`** (*scale share feature pyramid*): capas 18, 19 y 20, una capa de detección por escala.
+  Con `share=True`, suma las salidas entre escalas bajando o subiendo su resolución
+  (Ec. 1-3 de [1]); con `share=False`, cada escala predice por separado.
