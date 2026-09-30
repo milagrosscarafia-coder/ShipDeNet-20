@@ -41,4 +41,27 @@ def print_imagen(img, b=None):
 
     plt.show()
 
+class AugSAR(torch.utils.data.Dataset):
+    """Flips y rotaciones de 90° al azar, solo para entrenamiento.
+    Cajas: [x, y, w, h] en píxeles de una imagen cuadrada de size x size."""
+    def __init__(self, base, size=160):
+        self.base, self.size = base, size
 
+    def __len__(self):
+        return len(self.base)
+
+    def __getitem__(self, i):
+        img, b = self.base[i]
+        b = b.clone().float()
+        S = self.size
+        if torch.rand(1) < 0.5:                        # flip horizontal
+            img = img.flip(-1)
+            b[:, 0] = S - b[:, 0] - b[:, 2]
+        if torch.rand(1) < 0.5:                        # flip vertical
+            img = img.flip(-2)
+            b[:, 1] = S - b[:, 1] - b[:, 3]
+        if torch.rand(1) < 0.5:                        # rotación de 90° antihoraria
+            img = torch.rot90(img, 1, dims=(-2, -1))
+            x, y, w, h = b[:, 0].clone(), b[:, 1].clone(), b[:, 2].clone(), b[:, 3].clone()
+            b[:, 0], b[:, 1], b[:, 2], b[:, 3] = y, S - x - w, h, w
+        return img, b

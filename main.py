@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader, Subset, random_split
 from train import ShipDeNetTrain
 from shipBaseline import ShipDeNet
 from read_data_set.anchors import best_of_runs, load_train_wh
-from read_data_set.rdata import SSDD_BBox_coco
+from read_data_set.rdata import SSDD_BBox_coco, AugSAR
 
 from models.layers import DSConv
 from utils.visualizacion import visualizar, plotear
@@ -42,7 +42,12 @@ else:
     n_val = int(0.2 * len(dataset))
     train_set, val_set = random_split(dataset, [len(dataset) - n_val, n_val],
                                       generator=torch.Generator().manual_seed(0))
+    train_set = AugSAR(train_set, size=160)          # <- aumentación, solo en train
 
+# from read_data_set.rdata import print_imagen
+# for _ in range(4):
+#     img, b = train_set[0]        # la misma imagen, con transformaciones distintas
+#     print_imagen(img, b)
 
 train_loader = DataLoader(train_set, batch_size=BATCH, shuffle=True, collate_fn=collate)
 val_loader = DataLoader(val_set, batch_size=BATCH, shuffle=False, collate_fn=collate)

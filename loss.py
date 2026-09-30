@@ -105,7 +105,7 @@ class ShipDeNetLoss(nn.Module):
     => loss = alpha*L_xy + beta*L_wh + L_obj + gamma*L_noobj
     """
 
-    def __init__(self, anchors, vals=6, alpha=5.0, beta=5.0, gamma=0.5):
+    def __init__(self, anchors, vals=5, alpha=5.0, beta=5.0, gamma=0.5):
         super().__init__()
         # buffer: se mueve con model.to(device) pero no se entrena
         self.register_buffer("anchors", torch.as_tensor(anchors, dtype=torch.float))
@@ -160,7 +160,7 @@ class ShipDeNetLoss(nn.Module):
 if __name__ == "__main__":
     anchors = torch.tensor([[9, 12], [12, 25], [17, 12], [21, 45], [27, 17],
                             [36, 64], [50, 25], [59, 115], [105, 45]], dtype=torch.float)
-    B, vals = 2, 6
+    B, vals = 2, 5
     preds = [torch.randn(B, 3 * vals, 5, 5, requires_grad=True),
              torch.randn(B, 3 * vals, 10, 10, requires_grad=True),
              torch.randn(B, 3 * vals, 20, 20, requires_grad=True)]

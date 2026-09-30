@@ -1,6 +1,7 @@
 from utils.metrics import evaluate
 from utils.decode import decode, xywh_to_xyxy
 from utils.nms import postprocess
+import os
 import torch
 import torch.nn as nn
 from loss import ShipDeNetLoss
@@ -111,7 +112,9 @@ class ShipDeNetTrain (nn.Module):
             self.tr_parts.append(parts)
 
             if epoch % plot_every == 0:
-                path = f"/content/drive/MyDrive/ShipDeNet_0/losses_{epoch}.png"
+                os.makedirs("/content/drive/MyDrive/ShipDeNet_0", exist_ok=True)
+                path = path = f"/content/drive/MyDrive/ShipDeNet_0/losses_{epoch}.png"
+
                 fig = plotear(self.tr_losses, self.val_losses, self.tr_parts, self.val_parts, path=path, desde=10)
                 try:                             # si corre en un notebook, la muestra en vivo
                     from IPython.display import display
