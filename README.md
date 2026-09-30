@@ -107,3 +107,45 @@ Los tres módulos que se agregan después del backbone:
 - **`SSFP`** (*scale share feature pyramid*): capas 18, 19 y 20, una capa de detección por escala.
   Con `share=True`, suma las salidas entre escalas bajando o subiendo su resolución
   (Ec. 1-3 de [1]); con `share=False`, cada escala predice por separado.
+
+## loss.py 
+- **`to_cxcywh_norm`**: convierte las cajas [x, y, w, h]  en pixeles (esquina sup. izq., cocos) -> a (cx, cy, w, h)con coordenadas en el centros, normalizado a [0, 1]."""
+
+- **`shape_iou`**: Realiza el IoU entre una caja (w, h) y cada anchor (K, 2), todas centradas en el origen. Solo compara los tamanos es la elegir el anchor de cada barco. 
+
+- **`box_iou`**: Realiza IoU entre barcos con la posicion real en formato (cx, cy, w, h), se usa como target del score. 
+
+- **`build_targets`** Traduce las cajas del ground truth a tensores con la forma de la salida de la red. Para cada barco 
+    1. Elige entre los 9 anchors el de forma mas parecia con `shape_iou`.
+    2. Busca la celda de esa escala que contiene el centro del barco
+    3. Escribe los targets en esa posici\'on `[imagen, anchor, fila, columna]`
+
+Devuelve, para cada escala (orden L/32, L/16, L/8):
+| Tensor | Forma | Contenido |
+|---|---|---|
+| `obj` | (B, 3, S, S) | P_cell(ship): 1 donde hay un barco asignado (Ec. 13) |
+| `txy` | (B, 3, S, S, 2) | offset del centro dentro de la celda, en [0, 1] (Ec. 22) |
+| `box` | (B, 3, S, S, 4) | caja real `(cx, cy, w, h)` normalizada (Ec. 23 y el IoU) |
+[B es la imagen del batch, 3 hay 3 tipos de anchores, S,S la fila y columna de la celda (S=5,10,20 dependiendo la escala), con estas dimensiones se arma la grilla, `obj` recibe un solo numero por casillero de grilla, `txy` recibe 2 y `box` recibe 4]
+
+- **`ShipDeNetLoss(nn.Module)`**
+
+    Primero: Decodifica la salidad de la red 
+    - (B, 3*VALS, S, S)-->(B, 3, S, S, VALS)
+    - Centros: sigmoide, para que no se corran de la celda correspondiente
+    - tamaño: anchor · e^t, una corrección multiplicativa del anchor (siempre positiva, $$w = \text{anchor}_w \cdot e^{t_w} \qquad h = \text{anchor}_h \cdot e^{t_h}$$);
+    - score: sigmoide, en [0, 1].
+
+    Después calcula los términos de la loss, solo donde `obj = 1` salvo el último:
+
+    - **L_xy** (Ec. 22): error cuadrático del centro;
+    - **L_wh** (Ec. 23): error cuadrático entre las raíces de w y h;
+    - **L_obj** (Ec. 24): donde hay barco, el score debe valer el IoU de su caja con la real;
+    - **L_noobj** (Ec. 24): donde no hay barco, el score debe valer 0.
+
+
+  Total (Ec. 25), con α = β = 5 y γ = 0.5:
+
+    loss = α·L_xy + β·L_wh + γ·L_score,  con  L_score = (1/γ)·L_obj + L_noobj 
+    = α·L_xy + β·L_wh + L_obj + γ·L_noobj
+
