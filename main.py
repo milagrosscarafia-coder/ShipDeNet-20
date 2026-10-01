@@ -16,7 +16,7 @@ img_dir = os.path.join(BASE, "images", "train")
 ann_file = os.path.join(BASE, "annotations", "train.json")
 
 
-EPOCHS, BATCH, LR, VALS = 700, 32, 1e-3, 5
+EPOCHS, BATCH, LR, VALS = 1500, 32, 1e-3, 5
 
 
 def collate(batch):
@@ -61,12 +61,11 @@ print(f"IoU medio de los anchors: {mean_iou:.4f}")
 torch.save(anchors, "anchors.pt")
 
 # ---- modelo, optimizador, scheduler
-model = ShipDeNet(c_in=1, use_ff=False, use_fe=False, use_ssfp=False,
+model = ShipDeNet(c_in=1, use_ff=True, use_fe=True, use_ssfp=False,
                     out_ch=3 * VALS).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 total_iters = EPOCHS * len(train_loader)
-scheduler = torch.optim.lr_scheduler.LambdaLR(
-    optimizer, lambda it: (1 - it / total_iters) ** 0.9)
+scheduler = torch.optim.lr_scheduler.PolynomialLR(optimizer, total_iters=total_iters, power=0.9)
 
 # ---- entrenamiento
 trainer = ShipDeNetTrain(model, anchors, optimizer, scheduler, device, vals=VALS)

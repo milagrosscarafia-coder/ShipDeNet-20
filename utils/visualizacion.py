@@ -33,7 +33,7 @@ def predict_all(model, loader, anchors, vals, device):
 
 
 def visualizar(model, loader, anchors, vals, device, nombre="ShipDeNet-20",
-               n_show=12, out_dir="resultados", score_thr=0.5, show=True):
+               n_show=15, out_dir="resultados", score_thr=0.5, show=True):
     """Metricas + grilla de detecciones + curva P-R.
 
     Guarda en out_dir:

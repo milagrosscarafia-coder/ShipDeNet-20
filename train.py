@@ -112,9 +112,11 @@ class ShipDeNetTrain (nn.Module):
             self.tr_parts.append(parts)
 
             if epoch % plot_every == 0:
-                os.makedirs("/content/drive/MyDrive/ShipDeNet_0", exist_ok=True)
-                path = path = f"/content/drive/MyDrive/ShipDeNet_0/losses_{epoch}.png"
+                os.makedirs("resultados_FE", exist_ok=True)
+                path = f"resultados_FE/losses_FE_{epoch}.png"
 
+                # os.makedirs("/content/drive/MyDrive/ShipDeNet_0", exist_ok=True)
+                # path =  f"/content/drive/MyDrive/ShipDeNet_0/losses_{epoch}.png"
                 fig = plotear(self.tr_losses, self.val_losses, self.tr_parts, self.val_parts, path=path, desde=10)
                 try:                             # si corre en un notebook, la muestra en vivo
                     from IPython.display import display
