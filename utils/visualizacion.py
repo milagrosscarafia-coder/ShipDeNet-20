@@ -71,7 +71,7 @@ def visualizar(model, loader, anchors, vals, device, nombre="ShipDeNet-20",
 
 
 
-def plotear(tr_losses, val_losses, tr_parts, val_parts, path, desde=0, eval_every=50):
+def plotear(tr_losses, val_losses, tr_parts, val_parts, path, desde=0, eval_every=50,tr_metrics=None):
     """Grafica las curvas de loss y AP50, precision y recall en la misma figura (Plotly).
     desde: cantidad de epochs iniciales que no se grafican en la loss.
     eval_every: cada cuántas epochs se calcularon las métricas de val_parts."""
@@ -86,11 +86,11 @@ def plotear(tr_losses, val_losses, tr_parts, val_parts, path, desde=0, eval_ever
         for key, label in [("AP50", "AP50"), ("precision", "precision"), ("recall", "recall")]:
             fig.add_trace(go.Scatter(x=ep_m, y=[p[key] for p in val_parts], name=label,
                                      mode="lines+markers"), row=1, col=2)
-    if val_losses:
-            ep_m = [eval_every * (i + 1) for i in range(len(val_losses))]   # epochs reales
-            for key, label in [("AP50", "AP50_train"), ("precision", "precision_train"), ("recall", "recall_train")]:
-                fig.add_trace(go.Scatter(x=ep_m, y=[p[key] for p in val_losses], name=label,
-                                         mode="lines+markers"), row=1, col=2)
+    if tr_metrics:                                                       # ← 1
+        ep_m = [eval_every * (i + 1) for i in range(len(tr_metrics))]    # ← 2
+        for key, label in [("AP50", "AP50_train"), ("precision", "precision_train"), ("recall", "recall_train")]:
+            fig.add_trace(go.Scatter(x=ep_m, y=[p[key] for p in tr_metrics], name=label,   # ← 3
+                                     mode="lines+markers", line=dict(dash="dot")), row=1, col=2)
 
     fig.update_xaxes(title_text="epoch", row=1, col=1)
     fig.update_xaxes(title_text="epoch", row=1, col=2)
