@@ -7,7 +7,7 @@ class Backbone(nn.Module):
     def __init__(self, c_in=1, slope=1/5.5):
         super().__init__()
         # L/2: layer 1
-        self.layer1 = ConvAC(c_in, 8, stride=2, slope=slope)  # (B, 8, 80, 80)
+        self.layer1 = DSConv(c_in, 8, stride=2, slope=slope)  # (B, 8, 80, 80)
         # L/4: layers 2-3
         self.layer2 = DSConv(8, 16, stride=2, slope=slope)
         self.layer3 = DSConv(16, 16, stride=1, slope=slope)
