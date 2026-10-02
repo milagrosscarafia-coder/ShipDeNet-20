@@ -115,12 +115,12 @@ class ShipDeNetTrain (nn.Module):
             self.tr_parts.append(parts)
 
 
-        if epoch % plot_every == 0:
-            path = f"/content/drive/MyDrive/ShipDeNet_0/losses_{epoch}.html"
-            fig = plotear(self.tr_losses, self.val_losses, self.tr_parts, self.val_parts,
-                        path=path, desde=10, eval_every=eval_every)
-            clear_output(wait=True)
-            fig.show()
+            if epoch % plot_every == 0:
+                path = f"/content/drive/MyDrive/ShipDeNet_0/losses_{epoch}.html"
+                fig = plotear(self.tr_losses, self.val_losses, self.tr_parts, self.val_parts,
+                            path=path, desde=10, eval_every=eval_every)
+                clear_output(wait=True)
+                fig.show()
         
     
 
