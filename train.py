@@ -93,7 +93,7 @@ class ShipDeNetTrain (nn.Module):
         self.init_glorot()
         best_loss, best_ap = float("inf"), -1.0
         self.tr_parts, self.val_parts, self.tr_metrics = [], [], []
-
+        self.tr_losses, self.val_losses = [], []
         for epoch in tqdm(range(1, epochs + 1)):
             tr_loss, parts = self.train_one_epoch(train_loader)
 
