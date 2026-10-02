@@ -65,7 +65,7 @@ OUT = "/content/drive/MyDrive/ShipDeNet_0"
 torch.save(anchors, os.path.join(OUT, "anchors.pt"))
 
 # ---- modelo, optimizador, scheduler
-model = ShipDeNet(c_in=1, use_ff=True, use_fe=False, use_ssfp=False,
+model = ShipDeNet(c_in=1, use_ff=True, use_fe=True, use_ssfp=True,
                     out_ch=3 * VALS).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 total_iters = EPOCHS * len(train_loader)
@@ -82,12 +82,11 @@ trainer.fit(train_loader, val_loader, epochs=EPOCHS,  eval_every=10 if OVERFIT e
 model.load_state_dict(torch.load(os.path.join(OUT, "best.pt"), map_location=device))
 
 #con esto muestra las métricas y guarda las imágenes de detecciones y la curva P-R tanto para entrenamiento como para validacion
-path = f"/content/drive/MyDrive/ShipDeNet_0/visualizacion_val.html"
+path = f"/content/drive/MyDrive/ShipDeNet_SSFP/visualizacion_val.html"
 visualizar(model, val_loader, anchors, vals=VALS, device=device,
-           nombre="ShipDeNet-20 (validación)", n_show=15, out_dir=path, score_thr=0.5, show=True)
+           nombre="ShipDeNet-20 (validación)", n_show=20, out_dir=path, score_thr=0.5, show=True)
 
-path = f"/content/drive/MyDrive/ShipDeNet_0/visualizacion_train.html"
-visualizar(model, train_loader, anchors, vals=VALS, device=device,
-           nombre="ShipDeNet-20 (entrenamiento)", n_show=15, out_dir=path, score_thr=0.5, show=True)
-
+path = f"/content/drive/MyDrive/ShipDeNet_SSFP/visualizacion_train.html"
+visualizar(model, train_eval_loader, anchors, vals=VALS, device=device,
+           nombre="ShipDeNet-20 (entrenamiento)", out_dir=os.path.join(OUT, "train"))
 
