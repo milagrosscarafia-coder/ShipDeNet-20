@@ -17,7 +17,7 @@ img_dir = os.path.join(BASE, "images", "train")
 ann_file = os.path.join(BASE, "annotations", "train.json")
 
 
-EPOCHS, BATCH, LR, VALS = 1500, 32, 1e-3, 5
+EPOCHS, BATCH, LR, VALS = 2000, 32, 1e-3, 5
 
 
 def collate(batch):
