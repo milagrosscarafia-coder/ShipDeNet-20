@@ -34,12 +34,11 @@ class DSConv(nn.Module):
    
 
     def forward(self, x):
-        x = self.act(self.depth_conv(x))
-        x = self.point_conv(x)
-        if not self.head:                         # capas normales: BN + activación
+        x = self.point_conv(self.depth_conv(x))
+        if not self.head:
             x = self.act(self.bn2(x))
-        return x    
-
+        return x
+    
 
 # layer = DSConv(16, 8, stride=2)
 # x = torch.randn(1, 16, 160, 160)

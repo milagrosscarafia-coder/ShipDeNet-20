@@ -7,6 +7,8 @@ Uso desde otro script:
 """
 
 import os
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 import matplotlib.pyplot as plt
 import torch
@@ -34,12 +36,12 @@ def predict_all(model, loader, anchors, vals, device):
 
 def visualizar(model, loader, anchors, vals, device, nombre="ShipDeNet-20",
                n_show=15, out_dir="resultados", score_thr=0.5, show=True):
-    """Metricas + grilla de detecciones + curva P-R.
+    """Metricas + grilla de detecciones + curva P-R (Plotly).
 
     Guarda en out_dir:
-      detecciones.png : n_show imagenes con los colores del paper
-                        (verde = GT, azul = correcta, rojo = no detectado, amarillo = falsa alarma)
-      curva_pr.png    : curva precision-recall
+      detecciones.html : n_show imagenes con los colores del paper
+                         (verde = GT, azul = correcta, rojo = no detectado, amarillo = falsa alarma)
+      curva_pr.html    : curva precision-recall, con el punto de operacion (score_thr) marcado
     Devuelve el diccionario de metricas de utils.metrics.evaluate.
     """
     os.makedirs(out_dir, exist_ok=True)
@@ -54,37 +56,44 @@ def visualizar(model, loader, anchors, vals, device, nombre="ShipDeNet-20",
 
     # ---- grilla de detecciones (solo score >= score_thr, como en el paper)
     dets_thr = [d[d[:, 4] >= score_thr] for d in dets]
-    show_grid(images[:n_show], dets_thr[:n_show], gts[:n_show], n_cols=4,
-              save_path=os.path.join(out_dir, "detecciones.png"))
+    fig_grid = show_grid(images[:n_show], dets_thr[:n_show], gts[:n_show], n_cols=4,
+                         save_path=os.path.join(out_dir, "detecciones.html"))
 
-    # ---- curva P-R
-    plot_pr_curves({nombre: r}, save_path=os.path.join(out_dir, "curva_pr.png"))
+    # ---- curva P-R, con la cruz en el punto (recall, precision) del umbral usado
+    fig_pr = plot_pr_curves({nombre: r}, save_path=os.path.join(out_dir, "curva_pr.html"),
+                            puntos={nombre: (r["recall"], r["precision"])})
 
     if show:
-        plt.show()
+        fig_grid.show()
+        fig_pr.show()
     return r
 
-def plotear(tr_losses, val_losses, tr_parts, val_parts, path, desde=0):
-    """Grafica las curvas de loss y AP50, precision y recall en la misma figura.
-    desde: cantidad de epochs iniciales que no se grafican en la loss."""
-    fig, ax = plt.subplots(1, 2, figsize=(10, 4))
-    epochs = range(desde + 1, len(tr_losses) + 1)
-    ax[0].plot(epochs, tr_losses[desde:], label="train")
-    ax[0].plot(epochs, val_losses[desde:], label="val")
-    ax[0].set_xlabel("epoch")
-    ax[0].set_ylabel("loss")
-    ax[0].legend()
-    if tr_parts:
-        ap50 = [p["AP50"] for p in val_parts]
-        prec = [p["precision"] for p in val_parts]
-        rec = [p["recall"] for p in val_parts]
-        ax[1].plot(ap50, label="AP50")
-        ax[1].plot(prec, label="precision")
-        ax[1].plot(rec, label="recall")
-        ax[1].set_xlabel(f"epoch (cada {len(tr_losses) // len(ap50)} epochs)")
-        ax[1].set_ylabel("metrics")
-        ax[1].legend()
+
+
+
+def plotear(tr_losses, val_losses, tr_parts, val_parts, path, desde=0, eval_every=50):
+    """Grafica las curvas de loss y AP50, precision y recall en la misma figura (Plotly).
+    desde: cantidad de epochs iniciales que no se grafican en la loss.
+    eval_every: cada cuántas epochs se calcularon las métricas de val_parts."""
+    fig = make_subplots(rows=1, cols=2, subplot_titles=("Loss", "Métricas de validación"))
+
+    epochs = list(range(desde + 1, len(tr_losses) + 1))
+    fig.add_trace(go.Scatter(x=epochs, y=tr_losses[desde:], name="train", mode="lines"), row=1, col=1)
+    fig.add_trace(go.Scatter(x=epochs, y=val_losses[desde:], name="val", mode="lines"), row=1, col=1)
+
+    if val_parts:
+        ep_m = [eval_every * (i + 1) for i in range(len(val_parts))]   # epochs reales
+        for key, label in [("AP50", "AP50"), ("precision", "precision"), ("recall", "recall")]:
+            fig.add_trace(go.Scatter(x=ep_m, y=[p[key] for p in val_parts], name=label,
+                                     mode="lines+markers"), row=1, col=2)
+
+    fig.update_xaxes(title_text="epoch", row=1, col=1)
+    fig.update_xaxes(title_text="epoch", row=1, col=2)
+    fig.update_yaxes(type="log",title_text="loss", row=1, col=1)
+    fig.update_yaxes(title_text="valor", range=[0, 1], row=1, col=2)
+    fig.update_layout(width=1000, height=420, hovermode="x unified", template="plotly_white")
+
     if path:
         os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-        fig.savefig(path, dpi=150)
+        fig.write_html(path)            # interactivo: zoom, hover, ocultar curvas
     return fig

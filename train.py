@@ -12,6 +12,9 @@ from tqdm import tqdm
 
 from utils.visualizacion import plotear
 
+from IPython.display import clear_output
+
+
 
 IMG = 160 # dimension de la imagen 
 STRIDES = [32, 16, 8] # mismo orden que [p32 (L/32), p16 (L/16), p8 (L/8)]
@@ -111,19 +114,13 @@ class ShipDeNetTrain (nn.Module):
             self.val_losses.append(val_loss)
             self.tr_parts.append(parts)
 
-            if epoch % plot_every == 0:
-                # os.makedirs("resultados_FE", exist_ok=True)
-                # path = f"resultados_FE/losses_FE_{epoch}.png"
 
-                os.makedirs("/content/drive/MyDrive/ShipDeNet_0", exist_ok=True)
-                path =  f"/content/drive/MyDrive/ShipDeNet_0/losses_{epoch}.png"
-                fig = plotear(self.tr_losses, self.val_losses, self.tr_parts, self.val_parts, path=path, desde=10)
-                try:                             # si corre en un notebook, la muestra en vivo
-                    from IPython.display import display
-                    display(fig)
-                except ImportError:
-                    pass
-                plt.close("all")
+        if epoch % plot_every == 0:
+            path = f"/content/drive/MyDrive/ShipDeNet_0/losses_{epoch}.html"
+            fig = plotear(self.tr_losses, self.val_losses, self.tr_parts, self.val_parts,
+                        path=path, desde=10, eval_every=eval_every)
+            clear_output(wait=True)
+            fig.show()
         
     
 
