@@ -86,6 +86,11 @@ def plotear(tr_losses, val_losses, tr_parts, val_parts, path, desde=0, eval_ever
         for key, label in [("AP50", "AP50"), ("precision", "precision"), ("recall", "recall")]:
             fig.add_trace(go.Scatter(x=ep_m, y=[p[key] for p in val_parts], name=label,
                                      mode="lines+markers"), row=1, col=2)
+    if val_losses:
+            ep_m = [eval_every * (i + 1) for i in range(len(val_losses))]   # epochs reales
+            for key, label in [("AP50", "AP50_train"), ("precision", "precision_train"), ("recall", "recall_train")]:
+                fig.add_trace(go.Scatter(x=ep_m, y=[p[key] for p in val_losses], name=label,
+                                         mode="lines+markers"), row=1, col=2)
 
     fig.update_xaxes(title_text="epoch", row=1, col=1)
     fig.update_xaxes(title_text="epoch", row=1, col=2)

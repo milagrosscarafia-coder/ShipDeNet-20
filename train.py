@@ -87,7 +87,7 @@ class ShipDeNetTrain (nn.Module):
         
         return total / len(loader), result
 
-    def fit(self, train_loader, val_loader, epochs=2000, eval_every=50, plot_every=50, out="best.pt"):
+    def fit(self, train_loader, val_loader, epochs=2000, eval_every=50, plot_every=50, out="best.pt",train_eval_loader=None):
 
         self.init_glorot()
         best = float("inf")
@@ -104,8 +104,9 @@ class ShipDeNetTrain (nn.Module):
 
             print(f"época {epoch} | train {tr_loss:.3f} {parts} | val {val_loss:.3f}")
             if res is not None:
-                print(f"   AP50 {res['AP50']:.4f}  P {res['precision']:.4f}  R {res['recall']:.4f}")
-                self.val_parts.append(res)
+                self.val_parts.append(res)                                    # ya lo tenías
+                _, res_tr = self.validate(train_eval_loader, compute_ap=True)  # NUEVO: métricas en train
+                self.tr_metrics.append(res_tr)                                 # NUEVO: se guardan
             if val_loss < best:
                 best = val_loss
                 torch.save(self.model.state_dict(), out)
@@ -119,6 +120,7 @@ class ShipDeNetTrain (nn.Module):
                 path = f"/content/drive/MyDrive/ShipDeNet_0/losses_{epoch}.html"
                 fig = plotear(self.tr_losses, self.val_losses, self.tr_parts, self.val_parts,
                             path=path, desde=10, eval_every=eval_every)
+
                 clear_output(wait=True)
                 fig.show()
         

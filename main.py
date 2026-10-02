@@ -41,9 +41,10 @@ if OVERFIT:
     train_set = val_set = Subset(dataset, range(8))   # las mismas 8 imágenes
 else:
     n_val = int(0.2 * len(dataset))
-    train_set, val_set = random_split(dataset, [len(dataset) - n_val, n_val],
+    train_sub, val_set = random_split(dataset, [len(dataset) - n_val, n_val],
                                       generator=torch.Generator().manual_seed(0))
-    train_set = AugSAR(train_set, size=160)          # <- aumentación, solo en train
+    train_set = AugSAR(train_sub, size=160)           # train_set = con augmentation, para entrenar
+    train_eval_loader = DataLoader(train_sub, batch_size=BATCH, shuffle=False, collate_fn=collate)
 
 # from read_data_set.rdata import print_imagen
 # for _ in range(4):
@@ -74,7 +75,7 @@ scheduler = torch.optim.lr_scheduler.PolynomialLR(optimizer, total_iters=total_i
 print(f"numero de parametros {count_params(model)}")
 # ---- entrenamiento
 trainer = ShipDeNetTrain(model, anchors, optimizer, scheduler, device, vals=VALS)
-trainer.fit(train_loader, val_loader, epochs=EPOCHS,  eval_every=25 if OVERFIT else 50, plot_every=50, out=os.path.join(OUT, "best.pt"))
+trainer.fit(train_loader, val_loader, epochs=EPOCHS,  eval_every=10 if OVERFIT else 50, plot_every=50, out=os.path.join(OUT, "best.pt"), train_eval_loader=train_eval_loader)
 
 
 # cargar el MEJOR modelo guardado, no los pesos de la última época
