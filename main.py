@@ -60,7 +60,7 @@ print(images.shape, images.dtype, images.min().item(), images.max().item(), imag
 wh = load_train_wh(img_dir, ann_file)
 anchors, mean_iou = best_of_runs(wh, k=9)
 print(f"IoU medio de los anchors: {mean_iou:.4f}")
-OUT = "/content/drive/MyDrive/ShipDeNet_0"
+OUT = "/content/drive/MyDrive/ShipDeNet_SSFP"
 
 torch.save(anchors, os.path.join(OUT, "anchors.pt"))
 
