@@ -86,41 +86,49 @@ class ShipDeNetTrain (nn.Module):
         result = evaluate(all_dets, all_gts) if compute_ap else None
         
         return total / len(loader), result
-
-    def fit(self, train_loader, val_loader, epochs=2000, eval_every=50, plot_every=50, out="best.pt",train_eval_loader=None):
+    
+    def fit(self, train_loader, val_loader, epochs=2000, eval_every=50, plot_every=50,
+            out="best.pt", train_eval_loader=None):
 
         self.init_glorot()
-        best = float("inf")
+        best_loss, best_ap = float("inf"), -1.0
+        self.tr_parts, self.val_parts, self.tr_metrics = [], [], []
 
-        self.tr_losses, self.val_losses = [], []
-        self.tr_parts, self.val_parts = [], []
-
-        for epoch in tqdm(range(1, epochs+1)):
+        for epoch in tqdm(range(1, epochs + 1)):
             tr_loss, parts = self.train_one_epoch(train_loader)
 
             compute_ap = epoch % eval_every == 0
-            
             val_loss, res = self.validate(val_loader, compute_ap)
 
             print(f"época {epoch} | train {tr_loss:.3f} {parts} | val {val_loss:.3f}")
+
             if res is not None:
-                self.val_parts.append(res)                                    # ya lo tenías
-                _, res_tr = self.validate(train_eval_loader, compute_ap=True)  # NUEVO: métricas en train
-                self.tr_metrics.append(res_tr)                                 # NUEVO: se guardan
-            if val_loss < best:
-                best = val_loss
-                torch.save(self.model.state_dict(), out)
+                print(f"   val:   AP50 {res['AP50']:.4f}  P {res['precision']:.4f}  R {res['recall']:.4f}")
+                self.val_parts.append(res)
+
+                if train_eval_loader is not None:              # métricas en train, sin augmentation
+                    _, res_tr = self.validate(train_eval_loader, compute_ap=True)
+                    print(f"   train: AP50 {res_tr['AP50']:.4f}  P {res_tr['precision']:.4f}  R {res_tr['recall']:.4f}")
+                    self.tr_metrics.append(res_tr)
+
+                if res["AP50"] > best_ap:                      # mejor modelo por AP50
+                    best_ap = res["AP50"]
+                    torch.save(self.model.state_dict(), out)
+                    print(f"   nuevo mejor AP50 {best_ap:.4f} (época {epoch})")
+
+            if val_loss < best_loss:                           # mejor modelo por val loss (criterio del paper)
+                best_loss = val_loss
+                torch.save(self.model.state_dict(), out.replace(".pt", "_loss.pt"))
 
             self.tr_losses.append(tr_loss)
             self.val_losses.append(val_loss)
             self.tr_parts.append(parts)
 
-
-            if epoch % plot_every == 0:
+            if epoch % plot_every == 0:                        # DENTRO del loop
                 path = f"/content/drive/MyDrive/ShipDeNet_0/losses_{epoch}.html"
                 fig = plotear(self.tr_losses, self.val_losses, self.tr_parts, self.val_parts,
-                            path=path, desde=10, eval_every=eval_every)
-
+                              path=path, desde=10, eval_every=eval_every,
+                              tr_metrics=self.tr_metrics)
                 clear_output(wait=True)
                 fig.show()
         
