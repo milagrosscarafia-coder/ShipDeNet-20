@@ -102,7 +102,7 @@ if __name__ == "__main__":
     anchors = torch.load(os.path.join(OUT, "anchors.pt"), map_location=device).to(device)
     model = ShipDeNet(c_in=1, use_ff=USE_FF, use_fe=USE_FE, use_ssfp=USE_SSFP,
                       out_ch=3 * VALS).to(device)
-    model.load_state_dict(torch.load(os.path.join(OUT, "best.pt"), map_location=device))
+    model.load_state_dict(torch.load(os.path.join(OUT, "best (2).pt"), map_location=device))
     model.eval()
 
     # 1) detecciones en validación (con todos los scores)
@@ -125,8 +125,8 @@ if __name__ == "__main__":
 
     # 3) test: una sola vez, con el umbral elegido en validación (y 0.5 para el paper)
     if EVAL_TEST:
-        test_set = SSDD_BBox_coco(os.path.join(BASE, "images", "test"),
-                                  os.path.join(BASE, "annotations", "test.json"), size=160)
+        test_set = SSDD_BBox_coco(os.path.join(BASE, "images", "test_inshore"),
+                                  os.path.join(BASE, "annotations", "test_inshore.json"), size=160)
         test_loader = DataLoader(test_set, batch_size=BATCH, shuffle=False, collate_fn=collate)
         with torch.no_grad():
             _, test_dets, test_gts = predict_all(model, test_loader, anchors, VALS, device)
