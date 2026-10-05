@@ -39,7 +39,27 @@ class DSConv(nn.Module):
             x = self.act(self.bn2(x))
         return x
     
+# class DSConv(nn.Module):
+#     def __init__(self, c_in, c_out, stride=1, slope=1/5.5, kernel_size=3, head=False):
+#         super().__init__()
+#         self.head = head
+#         # Depthwise: un filtro espacial por canal (hace el downsampling si stride > 1)
+#         self.depth_conv = nn.Conv2d(c_in, c_in, kernel_size=kernel_size, stride=stride,
+#                                     padding=1, groups=c_in, bias=False)
+#         self.bn1 = nn.BatchNorm2d(c_in)                      # Fig. 5(b) de [12]
+#         # Leaky-ReLU con α = 5.5 de [12]: negative_slope = 1/5.5
+#         self.act = nn.LeakyReLU(negative_slope=slope, inplace=True)
+#         # Pointwise: 1x1 que mezcla los canales -> c_out
+#         self.point_conv = nn.Conv2d(c_in, c_out, kernel_size=1, bias=head)
+#         if not head:
+#             self.bn2 = nn.BatchNorm2d(c_out)
 
+#     def forward(self, x):
+#         x = self.act(self.bn1(self.depth_conv(x)))           # depthwise -> BN -> Leaky-ReLU
+#         x = self.point_conv(x)                               # pointwise
+#         if not self.head:
+#             x = self.act(self.bn2(x))                        # -> BN -> Leaky-ReLU
+#         return x                                             # cabeza: salida lineal
 # layer = DSConv(16, 8, stride=2)
 # x = torch.randn(1, 16, 160, 160)
 # print(layer(x).shape)                                  

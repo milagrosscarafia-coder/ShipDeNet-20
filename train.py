@@ -7,6 +7,8 @@ import torch.nn as nn
 from loss import ShipDeNetLoss
 from utils.visualizacion import plotear
 from matplotlib import pyplot as plt
+import math
+
 
 from tqdm import tqdm
 
@@ -91,6 +93,11 @@ class ShipDeNetTrain (nn.Module):
             out="best.pt", train_eval_loader=None):
 
         self.init_glorot()
+
+        for head in [self.model.ssfp.layer18, self.model.ssfp.layer19, self.model.ssfp.layer20]:
+            with torch.no_grad():
+                head.point_conv.bias.view(3, self.vals)[:, 4] = math.log(0.01 / 0.99)   # score inicial ≈ 0.01
+        
         best_loss, best_ap = float("inf"), -1.0
         self.tr_parts, self.val_parts, self.tr_metrics = [], [], []
         self.tr_losses, self.val_losses = [], []
@@ -125,7 +132,8 @@ class ShipDeNetTrain (nn.Module):
             self.tr_parts.append(parts)
 
             if epoch % plot_every == 0:                        # DENTRO del loop
-                path = r"C:\Users\Usuario\Desktop\5to Semestre\Aprendizaje profundo con vision artificial\ShipDeNet\ShipDeNet-20\SSFP\losses_{epoch}.html"
+                # path = r"C:\Users\Usuario\Desktop\5to Semestre\Aprendizaje profundo con vision artificial\ShipDeNet\ShipDeNet-20\SSFP\losses_{epoch}.html"
+                path = f"/content/drive/MyDrive/ShipDeNet_SSFP/losses_{epoch}.html"
                 fig = plotear(self.tr_losses, self.val_losses, self.tr_parts, self.val_parts,
                               path=path, desde=10, eval_every=eval_every,
                               tr_metrics=self.tr_metrics)
