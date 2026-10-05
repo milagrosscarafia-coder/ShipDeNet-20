@@ -68,7 +68,7 @@ torch.save(anchors, os.path.join(OUT, "anchors.pt"))
 # ---- modelo, optimizador, scheduler
 model = ShipDeNet(c_in=1, use_ff=True, use_fe=True, use_ssfp=True,
                     out_ch=3 * VALS).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=LR)
+optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=5e-4)
 total_iters = EPOCHS * len(train_loader)
 scheduler = torch.optim.lr_scheduler.PolynomialLR(optimizer, total_iters=total_iters, power=0.9)
 

@@ -64,4 +64,9 @@ class AugSAR(torch.utils.data.Dataset):
             img = torch.rot90(img, 1, dims=(-2, -1))
             x, y, w, h = b[:, 0].clone(), b[:, 1].clone(), b[:, 2].clone(), b[:, 3].clone()
             b[:, 0], b[:, 1], b[:, 2], b[:, 3] = y, S - x - w, h, w
+        if torch.rand(1) < 0.5:                        # brillo / contraste
+            img = img * (0.8 + 0.4 * torch.rand(1))
+        if torch.rand(1) < 0.5:                        # ruido multiplicativo tipo speckle
+            img = img * (1 + 0.1 * torch.randn_like(img))
+        img = img.clamp(0, 1)
         return img, b
