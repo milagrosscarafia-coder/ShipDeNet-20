@@ -125,7 +125,7 @@ class ShipDeNetTrain (nn.Module):
             self.tr_parts.append(parts)
 
             if epoch % plot_every == 0:                        # DENTRO del loop
-                path = f"/content/drive/MyDrive/ShipDeNet_SSFP/losses_{epoch}.html"
+                path = r"C:\Users\Usuario\Desktop\5to Semestre\Aprendizaje profundo con vision artificial\ShipDeNet\ShipDeNet-20\SSFP\losses_{epoch}.html"
                 fig = plotear(self.tr_losses, self.val_losses, self.tr_parts, self.val_parts,
                               path=path, desde=10, eval_every=eval_every,
                               tr_metrics=self.tr_metrics)

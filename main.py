@@ -60,7 +60,7 @@ print(images.shape, images.dtype, images.min().item(), images.max().item(), imag
 wh = load_train_wh(img_dir, ann_file)
 anchors, mean_iou = best_of_runs(wh, k=9)
 print(f"IoU medio de los anchors: {mean_iou:.4f}")
-OUT = "/content/drive/MyDrive/ShipDeNet_SSFP"
+OUT = r"C:\Users\Usuario\Desktop\5to Semestre\Aprendizaje profundo con vision artificial\ShipDeNet\ShipDeNet-20\SSFP"
 
 torch.save(anchors, os.path.join(OUT, "anchors.pt"))
 
@@ -82,11 +82,11 @@ trainer.fit(train_loader, val_loader, epochs=EPOCHS,  eval_every=10 if OVERFIT e
 model.load_state_dict(torch.load(os.path.join(OUT, "best.pt"), map_location=device))
 
 #con esto muestra las métricas y guarda las imágenes de detecciones y la curva P-R tanto para entrenamiento como para validacion
-path = f"/content/drive/MyDrive/ShipDeNet_SSFP/visualizacion_val.html"
+path = r"C:\Users\Usuario\Desktop\5to Semestre\Aprendizaje profundo con vision artificial\ShipDeNet\ShipDeNet-20\SSFP\visualizacion_val.html"
 visualizar(model, val_loader, anchors, vals=VALS, device=device,
            nombre="ShipDeNet-20 (validación)", n_show=20, out_dir=path, score_thr=0.5, show=True)
 
-path = f"/content/drive/MyDrive/ShipDeNet_SSFP/visualizacion_train.html"
+path = r"C:\Users\Usuario\Desktop\5to Semestre\Aprendizaje profundo con vision artificial\ShipDeNet\ShipDeNet-20\SSFP\visualizacion_train.html"
 visualizar(model, train_eval_loader, anchors, vals=VALS, device=device,
            nombre="ShipDeNet-20 (entrenamiento)", out_dir=os.path.join(OUT, "train"))
 
