@@ -46,10 +46,13 @@ else:
     train_set = AugSAR(train_sub, size=160)           # train_set = con augmentation, para entrenar
     train_eval_loader = DataLoader(train_sub, batch_size=BATCH, shuffle=False, collate_fn=collate)
 
-# from read_data_set.rdata import print_imagen
-# for _ in range(4):
-#     img, b = train_set[0]        # la misma imagen, con transformaciones distintas
-#     print_imagen(img, b)
+from read_data_set.rdata import random_zoom, print_imagen
+
+# img, b = train_sub[0]                    # imagen original, sin augmentation
+# print_imagen(img, b)                     # original
+# for _ in range(3):
+#     img_z, b_z = random_zoom(img, b.float(), S=160, max_scale=1.5)
+#     print_imagen(img_z, b_z)             # siempre con zoom
 import inspect
 from read_data_set.rdata import AugSAR
 print("augmentation de intensidad:", "randn_like" in inspect.getsource(AugSAR))
@@ -70,7 +73,7 @@ torch.save(anchors, os.path.join(OUT, "anchors.pt"))
 # ---- modelo, optimizador, scheduler
 model = ShipDeNet(c_in=1, use_ff=True, use_fe=True, use_ssfp=True,
                     out_ch=3 * VALS).to(device)
-optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=5e-4)
+optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=0.05)
 print(optimizer)
 total_iters = EPOCHS * len(train_loader)
 scheduler = torch.optim.lr_scheduler.PolynomialLR(optimizer, total_iters=total_iters, power=0.9)

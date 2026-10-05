@@ -4,6 +4,7 @@ from torch.utils.data import Dataset
 import torchvision.transforms.functional as TF
 import matplotlib.pyplot as plt 
 import matplotlib.patches as patches
+import torch.nn.functional as F
 
 
 class SSDD_BBox_coco():
@@ -64,9 +65,26 @@ class AugSAR(torch.utils.data.Dataset):
             img = torch.rot90(img, 1, dims=(-2, -1))
             x, y, w, h = b[:, 0].clone(), b[:, 1].clone(), b[:, 2].clone(), b[:, 3].clone()
             b[:, 0], b[:, 1], b[:, 2], b[:, 3] = y, S - x - w, h, w
-        if torch.rand(1) < 0.5:                        # brillo / contraste
-            img = img * (0.8 + 0.4 * torch.rand(1))
-        if torch.rand(1) < 0.5:                        # ruido multiplicativo tipo speckle
-            img = img * (1 + 0.1 * torch.randn_like(img))
+        if torch.rand(1) < 0.5:
+            img, b = random_zoom(img, b, S=self.size)
         img = img.clamp(0, 1)
+
         return img, b
+
+def random_zoom(img, b, S=160, max_scale=1.5, min_keep=0.4):
+    """Zoom al azar: recorta una ventana de lado S/s y la vuelve a llevar a SxS.
+    img: (C, S, S); b: (n, 4) [x, y, w, h] en pixeles. Descarta cajas que quedan
+    con menos de min_keep de su area dentro de la ventana."""
+    s = 1 + (max_scale - 1) * torch.rand(1).item()
+    win = S / s
+    x0 = torch.rand(1).item() * (S - win)
+    y0 = torch.rand(1).item() * (S - win)
+    i0, j0, n = int(round(y0)), int(round(x0)), int(round(win))
+    crop = img[:, i0:i0 + n, j0:j0 + n]
+    img = F.interpolate(crop[None], size=(S, S), mode="bilinear", align_corners=False)[0]
+    k = S / n                                          # escala real usada
+    x1 = ((b[:, 0] - j0) * k).clamp(0, S); y1 = ((b[:, 1] - i0) * k).clamp(0, S)
+    x2 = ((b[:, 0] + b[:, 2] - j0) * k).clamp(0, S); y2 = ((b[:, 1] + b[:, 3] - i0) * k).clamp(0, S)
+    nb = torch.stack([x1, y1, x2 - x1, y2 - y1], 1)
+    keep = (nb[:, 2] * nb[:, 3]) >= min_keep * (b[:, 2] * b[:, 3] * k * k)
+    return img, nb[keep]
