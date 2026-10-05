@@ -50,7 +50,9 @@ else:
 # for _ in range(4):
 #     img, b = train_set[0]        # la misma imagen, con transformaciones distintas
 #     print_imagen(img, b)
-
+import inspect
+from read_data_set.rdata import AugSAR
+print("augmentation de intensidad:", "randn_like" in inspect.getsource(AugSAR))
 train_loader = DataLoader(train_set, batch_size=BATCH, shuffle=True, collate_fn=collate)
 val_loader = DataLoader(val_set, batch_size=BATCH, shuffle=False, collate_fn=collate)
 
@@ -69,6 +71,7 @@ torch.save(anchors, os.path.join(OUT, "anchors.pt"))
 model = ShipDeNet(c_in=1, use_ff=True, use_fe=True, use_ssfp=True,
                     out_ch=3 * VALS).to(device)
 optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=5e-4)
+print(optimizer)
 total_iters = EPOCHS * len(train_loader)
 scheduler = torch.optim.lr_scheduler.PolynomialLR(optimizer, total_iters=total_iters, power=0.9)
 
