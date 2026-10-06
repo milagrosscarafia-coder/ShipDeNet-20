@@ -72,7 +72,7 @@ os.makedirs(OUT, exist_ok=True)
 torch.save(anchors, os.path.join(OUT, "anchors.pt"))
 
 # ---- modelo, optimizador, scheduler
-model = ShipDeNet(c_in=1, use_ff=True, use_fe=False, use_ssfp=False,
+model = ShipDeNet(c_in=1, use_ff=True, use_fe=True, use_ssfp=False,
                     out_ch=3 * VALS).to(device)
 optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=0.05)
 print(optimizer)
