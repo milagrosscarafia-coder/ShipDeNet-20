@@ -23,8 +23,8 @@ from utils.visualizacion import predict_all
 from utils.metrics import evaluate, match_image, _np
 
 # ------------------------------------------------------------------ configuración
-OUT = r"C:\Users\Usuario\Desktop\5to Semestre\Aprendizaje profundo con vision artificial\ShipDeNet\ShipDeNet-20\SSFP"        # carpeta con best.pt y anchors.pt
-USE_FF, USE_FE, USE_SSFP = True, True, True      # igual que en el entrenamiento
+OUT = "FF"       # carpeta con best.pt y anchors.pt
+USE_FF, USE_FE, USE_SSFP = True, False, False      # igual que en el entrenamiento
 VALS, BATCH, SEED = 5, 32, 0
 EVAL_TEST = True      # True solo al final del trabajo: el test se mira UNA vez
 
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     anchors = torch.load(os.path.join(OUT, "anchors.pt"), map_location=device).to(device)
     model = ShipDeNet(c_in=1, use_ff=USE_FF, use_fe=USE_FE, use_ssfp=USE_SSFP,
                       out_ch=3 * VALS).to(device)
-    model.load_state_dict(torch.load(os.path.join(OUT, "best (2).pt"), map_location=device))
+    model.load_state_dict(torch.load(os.path.join(OUT, "best.pt"), map_location=device))
     model.eval()
 
     # 1) detecciones en validación (con todos los scores)
@@ -125,8 +125,8 @@ if __name__ == "__main__":
 
     # 3) test: una sola vez, con el umbral elegido en validación (y 0.5 para el paper)
     if EVAL_TEST:
-        test_set = SSDD_BBox_coco(os.path.join(BASE, "images", "test_inshore"),
-                                  os.path.join(BASE, "annotations", "test_inshore.json"), size=160)
+        test_set = SSDD_BBox_coco(os.path.join(BASE, "images", "test"),
+                                  os.path.join(BASE, "annotations", "test.json"), size=160)
         test_loader = DataLoader(test_set, batch_size=BATCH, shuffle=False, collate_fn=collate)
         with torch.no_grad():
             _, test_dets, test_gts = predict_all(model, test_loader, anchors, VALS, device)
