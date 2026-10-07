@@ -23,8 +23,8 @@ from utils.visualizacion import predict_all
 from utils.metrics import evaluate, match_image, _np
 
 # ------------------------------------------------------------------ configuración
-OUT = "FF"       # carpeta con best.pt y anchors.pt
-USE_FF, USE_FE, USE_SSFP = True, False, False      # igual que en el entrenamiento
+OUT = "SSFP"       # carpeta con best.pt y anchors.pt
+USE_FF, USE_FE, USE_SSFP = True, True, True      # igual que en el entrenamiento
 VALS, BATCH, SEED = 5, 32, 0
 EVAL_TEST = True      # True solo al final del trabajo: el test se mira UNA vez
 
@@ -125,8 +125,8 @@ if __name__ == "__main__":
 
     # 3) test: una sola vez, con el umbral elegido en validación (y 0.5 para el paper)
     if EVAL_TEST:
-        test_set = SSDD_BBox_coco(os.path.join(BASE, "images", "test"),
-                                  os.path.join(BASE, "annotations", "test.json"), size=160)
+        test_set = SSDD_BBox_coco(os.path.join(BASE, "images", "test_offshore"),
+                                  os.path.join(BASE, "annotations", "test_offshore.json"), size=160)
         test_loader = DataLoader(test_set, batch_size=BATCH, shuffle=False, collate_fn=collate)
         with torch.no_grad():
             _, test_dets, test_gts = predict_all(model, test_loader, anchors, VALS, device)

@@ -40,58 +40,58 @@ class FE(nn.Module):
         x8 = torch.cat(f["s8"], dim=1)       # capas 4-6:          96 canales, 20x20
         return x32, x16, x8
 
-class SSFP(nn.Module):
-    """Scale share feature pyramid: en cada escala se concatenan las features de las
-    tres escalas (llevadas a la misma resolución) y recién ahí va la capa de detección."""
-    def __init__(self, c32, c16, c8, out_ch=15, slope=1/5.5, share=True):
-        super().__init__()
-        self.share = share
-        c_in = [c32 + c16 + c8] * 3 if share else [c32, c16, c8]
-        self.layer18 = DSConv(c_in[0], out_ch, slope=slope, head=True)   # D_L/32
-        self.layer19 = DSConv(c_in[1], out_ch, slope=slope, head=True)   # D_L/16
-        self.layer20 = DSConv(c_in[2], out_ch, slope=slope, head=True)   # D_L/8
-
-    def forward(self, x32, x16, x8):
-        if self.share:
-            up = lambda x, s: F.interpolate(x, scale_factor=s, mode="nearest")
-            down = lambda x, s: F.max_pool2d(x, s)
-            x32, x16, x8 = (
-                torch.cat([x32, down(x16, 2), down(x8, 4)], dim=1),       # todo a 5x5
-                torch.cat([up(x32, 2), x16, down(x8, 2)], dim=1),         # todo a 10x10
-                torch.cat([up(x32, 4), up(x16, 2), x8], dim=1),           # todo a 20x20
-            )
-        return [self.layer18(x32), self.layer19(x16), self.layer20(x8)]
-
-# class SSFP (nn.Module):
-#     def __init__(self,c32, c16, c8, out_ch=15, slope = 1/5.5, share=True):
-
-#         # los canales de salida no son los del backbone sino los que se tiene luego de aplicarle los distintos modulos a la red,
-#         #  por lo que conviene que sean un parametro de la red, debido a que va a depender de si se ponen o no todos los modulos
-#         #  de la red.
+# class SSFP(nn.Module):
+#     """Scale share feature pyramid: en cada escala se concatenan las features de las
+#     tres escalas (llevadas a la misma resolución) y recién ahí va la capa de detección."""
+#     def __init__(self, c32, c16, c8, out_ch=15, slope=1/5.5, share=True):
 #         super().__init__()
-
-#     #  se necesitan 3 de downsampling y 3 de upsampling
-
-#         self.layer18 = DSConv(c32, out_ch, slope = slope, head = True)
-#         self.layer19 = DSConv(c16, out_ch, slope = slope, head = True )
-#         self.layer20 = DSConv(c8, out_ch, slope = slope, head = True )
-
 #         self.share = share
+#         c_in = [c32 + c16 + c8] * 3 if share else [c32, c16, c8]
+#         self.layer18 = DSConv(c_in[0], out_ch, slope=slope, head=True)   # D_L/32
+#         self.layer19 = DSConv(c_in[1], out_ch, slope=slope, head=True)   # D_L/16
+#         self.layer20 = DSConv(c_in[2], out_ch, slope=slope, head=True)   # D_L/8
 
 #     def forward(self, x32, x16, x8):
+#         if self.share:
+#             up = lambda x, s: F.interpolate(x, scale_factor=s, mode="nearest")
+#             down = lambda x, s: F.max_pool2d(x, s)
+#             x32, x16, x8 = (
+#                 torch.cat([x32, down(x16, 2), down(x8, 4)], dim=1),       # todo a 5x5
+#                 torch.cat([up(x32, 2), x16, down(x8, 2)], dim=1),         # todo a 10x10
+#                 torch.cat([up(x32, 4), up(x16, 2), x8], dim=1),           # todo a 20x20
+#             )
+#         return [self.layer18(x32), self.layer19(x16), self.layer20(x8)]
 
-#         d32 = self.layer18(x32)
-#         d16 = self.layer19(x16)
-#         d8 = self.layer20(x8)
+class SSFP (nn.Module):
+    def __init__(self,c32, c16, c8, out_ch=15, slope = 1/5.5, share=True):
 
-#         if not self.share:
-#             return [d32, d16, d8]
+        # los canales de salida no son los del backbone sino los que se tiene luego de aplicarle los distintos modulos a la red,
+        #  por lo que conviene que sean un parametro de la red, debido a que va a depender de si se ponen o no todos los modulos
+        #  de la red.
+        super().__init__()
 
-#         d32_prima = d32 + F.avg_pool2d(d16, 2) + F.avg_pool2d(d8, 4)          # todo a 5x5
-#         d16_prima = d16 + F.interpolate(d32, scale_factor=2) + F.avg_pool2d(d8, 2)   # todo a 10x10
-#         d8_prima = d8 + F.interpolate(d16, scale_factor=2) + F.interpolate(d32, scale_factor=4)  # todo a 20x20
+    #  se necesitan 3 de downsampling y 3 de upsampling
 
-#         return [d32_prima, d16_prima, d8_prima]
+        self.layer18 = DSConv(c32, out_ch, slope = slope, head = True)
+        self.layer19 = DSConv(c16, out_ch, slope = slope, head = True )
+        self.layer20 = DSConv(c8, out_ch, slope = slope, head = True )
+
+        self.share = share
+
+    def forward(self, x32, x16, x8):
+
+        d32 = self.layer18(x32)
+        d16 = self.layer19(x16)
+        d8 = self.layer20(x8)
+
+        if not self.share:
+            return [d32, d16, d8]
+
+        d32_prima = d32 + F.avg_pool2d(d16, 2) + F.avg_pool2d(d8, 4)          # todo a 5x5
+        d16_prima = d16 + F.interpolate(d32, scale_factor=2) + F.avg_pool2d(d8, 2)   # todo a 10x10
+        d8_prima = d8 + F.interpolate(d16, scale_factor=2) + F.interpolate(d32, scale_factor=4)  # todo a 20x20
+
+        return [d32_prima, d16_prima, d8_prima]
 
 # class SSFP(nn.Module):
 #     def __init__(self, c32, c16, c8, out_ch=15, mid_ch=32, slope=1/5.5, share=True):
